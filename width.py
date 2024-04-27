@@ -1,22 +1,34 @@
-import pandas as pd
+from openpyxl import load_workbook
+from openpyxl.styles import Font, Alignment
+from openpyxl.utils import get_column_letter
 
-def ajustar_largura_colunas(df):
-    # Cria um dicionário para armazenar as larguras ajustadas
-    largura_colunas = {}
+def ajustar_largura_colunas_excel(excel_file, sheet_name):
+    # Abre o arquivo Excel
+    wb = load_workbook(excel_file)
+    
+    # Obtém a planilha
+    ws = wb[sheet_name]
+    if sheet_name=='Resumo':
+        # Adiciona a string na primeira célula
+        cell = ws.cell(row=1, column=1, value="eu amo o brasil, eu amo o brasil!!!")
+        # Aplica formatação em negrito e centralizada
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal='center', vertical='center')
+    # Ajusta automaticamente a largura das colunas
+    for col in ws.columns:
+        max_length = 0
+        for cell in col:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+        adjusted_width = (max_length + 2) * 1.2
+        column_letter = get_column_letter(col[0].column)
+        ws.column_dimensions[column_letter].width = adjusted_width
 
-    # Itera sobre as colunas do DataFrame
-    for col in df.columns:
-        # Calcula a largura máxima de cada coluna
-        largura_maxima = max(df[col].astype(str).apply(len).max(), len(col))
-        
-        # Adiciona 2 caracteres adicionais para uma margem
-        largura_ajustada = largura_maxima + 2
-        
-        # Armazena a largura ajustada para a coluna
-        largura_colunas[col] = largura_ajustada
-
-    return largura_colunas
-
+    # Salva o arquivo Excel com as colunas ajustadas
+    wb.save(excel_file)
 dados_mean = {"Data" : ['aaaaa', 'aaaaa', 'aaaaaa'],
                   "": ['bbbbb', 'bbbbbb', 'bbbbbb'],
                   "January": ['cccccc', 'cccccc', 'cccccc'],
@@ -31,9 +43,10 @@ dados_rate = {"Tabela" : ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'aaaa
 
 df_mean = pd.DataFrame(dados_mean)
 df_rate = pd.DataFrame(dados_rate)
-ajustar_largura_colunas(df_mean)
-ajustar_largura_colunas(df_rate)
 # Imprime o DataFrame resultante
 with pd.ExcelWriter('dados_usd.xlsx', engine='xlsxwriter') as writer:
-    df_mean.to_excel(writer, index=False, startrow=2, sheet_name='Resumo')
-    df_mean.to_excel(writer, index=False, startrow=7, sheet_name='Resumo')
+    df_mean.to_excel(writer, index=False, startrow=2, sheet_name='Copper')
+    df_rate.to_excel(writer, index=False, startrow=7, sheet_name='Resumo')
+
+# Exemplo de uso da função
+ajustar_largura_colunas_excel('dados_usd.xlsx', 'Resumo')
