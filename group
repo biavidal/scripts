@@ -1,0 +1,25 @@
+import pandas as pd
+from pathlib import Path
+import datetime as dt
+import glob
+
+# Definindo a data de hoje no formato desejado
+today = dt.datetime.now().strftime('%Y%m%d')
+
+# Caminho para a pasta de downloads
+path = Path.home() / 'downloads'
+
+# Padrão de arquivos a serem buscados
+file_pattern = f'Plant R division_NW*{today}*.xlsm'
+
+# Encontrando todos os arquivos que correspondem ao padrão
+files = glob.glob(str(path / file_pattern))
+
+# Carregando os arquivos em dataframes
+dataframes = [pd.read_excel(file) for file in files]
+
+# Concatenando todos os dataframes
+df_group = pd.concat(dataframes)
+
+# Exibir o dataframe concatenado (opcional)
+print(df_group)
