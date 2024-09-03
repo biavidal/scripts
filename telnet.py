@@ -1,5 +1,6 @@
 import telnetlib
 import pandas as pd
+from datetime import datetime
 
 # Defina as variáveis de conexão Telnet
 host = 'example.com'
@@ -14,8 +15,9 @@ commands = [
     'command_3'
 ]
 
-# Dicionário para armazenar os resultados dos comandos
-results = {}
+# Dicionário para armazenar os resultados dos comandos, tempos e IPs
+results = []
+ip_address = '192.168.1.1'  # Defina o IP relacionado aos comandos
 
 # Conectando ao Telnet
 tn = telnetlib.Telnet(host, port)
@@ -45,16 +47,26 @@ def capture_long_output(command, tn, prompt=b"$", more_indicator=b"--More--"):
     output += tn.read_until(prompt)
     return output.decode('ascii')
 
-# Executando cada comando e capturando a saída
+# Executando cada comando, capturando o tempo e a saída
 for command in commands:
+    start_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # Captura o horário de início
     output = capture_long_output(command, tn)
-    results[command] = output
+    end_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # Captura o horário de término
+    
+    # Adiciona os resultados ao dicionário com o comando, IP, horários e saída
+    results.append({
+        'Command': command,
+        'IP': ip_address,
+        'Start Time': start_time,
+        'End Time': end_time,
+        'Output': output
+    })
 
 # Fechando a conexão Telnet
 tn.close()
 
 # Convertendo os resultados em um DataFrame do pandas
-df = pd.DataFrame(list(results.items()), columns=['Command', 'Output'])
+df = pd.DataFrame(results)
 
 # Salvando o DataFrame em um arquivo Excel
 df.to_excel('telnet_outputs.xlsx', index=False)
